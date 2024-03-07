@@ -14,3 +14,6 @@ test:
 
 flake:
 	docker compose -f ${env}.yml exec backend sh -c "flake8"
+
+createsuperuser:
+	docker compose -f ${env}.yml exec backend sh -c "python manage.py createsuperuser"
