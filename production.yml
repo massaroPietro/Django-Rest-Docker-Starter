@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    command: bash -c "
+          python manage.py migrate --no-input &&
+          python manage.py collectstatic --no-input &&
+          gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+          "
+    volumes:
+      - static_volume:/home/app/web/static
+      - media_volume:/home/app/web/media
+    expose:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.envs/.production/django.env
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.envs/.production/postgres.env
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./compose/production/nginx/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/home/app/web/static
+      - media_volume:/home/app/web/media
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

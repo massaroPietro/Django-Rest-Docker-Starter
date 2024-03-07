@@ -1,0 +1,4 @@
+[flake8]
+exclude = migrations,settings.py,venv,frontend
+max-line-length=88
+ignore = I001

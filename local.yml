@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    command: bash -c "
+          python manage.py migrate --no-input &&
+          python manage.py runserver 0.0.0.0:8000
+          "
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.envs/.local/django.env
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.envs/.local/postgres.env
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.envs/.local/pgadmin.env
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "9000:80"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./compose/local/frontend/Dockerfile
+    command: bash -c "npm run dev -- --host"
+    ports:
+      - "80:5173"
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  pgadmin:
