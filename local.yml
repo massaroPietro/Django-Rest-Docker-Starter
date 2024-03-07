@@ -18,11 +18,12 @@ services:
         condition: service_healthy
     env_file:
       - ./.envs/.local/django.env
+    container_name: dev_backend
 
   db:
     image: postgres:15-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - dev_postgres_data:/var/lib/postgresql/data
     env_file:
       - ./.envs/.local/postgres.env
     healthcheck:
@@ -30,6 +31,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    container_name: dev_db
 
   pgadmin:
     image: dpage/pgadmin4
@@ -39,9 +41,10 @@ services:
     env_file:
       - ./.envs/.local/pgadmin.env
     volumes:
-      - pgadmin:/var/lib/pgadmin
+      - dev_pgadmin:/var/lib/pgadmin
     ports:
       - "9000:80"
+    container_name: dev_pgadmin
 
   frontend:
     build:
@@ -59,7 +62,8 @@ services:
       - WATCHPACK_POLLING=true
     depends_on:
       - backend
+    container_name: dev_frontend
 
 volumes:
-  postgres_data:
-  pgadmin:
+  dev_postgres_data:
+  dev_pgadmin:

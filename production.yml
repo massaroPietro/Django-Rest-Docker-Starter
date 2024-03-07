@@ -15,6 +15,7 @@ services:
       - media_volume:/home/app/web/media
     expose:
       - "8000:8000"
+    container_name: backend
     depends_on:
       db:
         condition: service_healthy
@@ -27,6 +28,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - ./.envs/.production/postgres.env
+    container_name: db
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
@@ -46,6 +48,7 @@ services:
       - NODE_ENV=development
     depends_on:
       - backend
+    container_name: nginx
 
 volumes:
   postgres_data:
