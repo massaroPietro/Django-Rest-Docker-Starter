@@ -60,6 +60,8 @@ make run env=production
 | db         | db      |           | 5432        |
 | nginx      | nginx   | 80        | 80          |
 
+For a quick check of what it looks like in production you can copy the files in .envs/.local to .envs/.production
+
 ### Useful Makefile Commands
 
 - `make migrate`: Run Django migrations.
